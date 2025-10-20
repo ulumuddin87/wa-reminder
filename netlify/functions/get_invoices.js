@@ -2,8 +2,9 @@
 import fetch from "node-fetch";
 
 export async function handler(event, context) {
-  const SUPABASE_URL = process.env.SUPABASE_URL; // contoh: https://xyzcompany.supabase.co
-  const SUPABASE_KEY = process.env.SUPABASE_KEY; // bisa ANON_KEY atau SERVICE_ROLE_KEY
+  // Hardcode Supabase URL dan ANON_KEY
+  const SUPABASE_URL = "https://opfliukxurkarnpotexf.supabase.co";
+  const SUPABASE_KEY = "PASTE_ANeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZmxpdWt4dXJrYXJucG90ZXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MDEyMjcsImV4cCI6MjA3NjQ3NzIyN30.QxiTE3F0jwQkV3ASNz5cfMRF__bctpkRYgCWPoeO-Y0ON_KEY_DI_SINI"; // Ganti dengan ANON_KEY Supabase-mu
 
   try {
     // Ambil semua data dari tabel invoices
