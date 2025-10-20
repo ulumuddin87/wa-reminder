@@ -4,10 +4,9 @@ import fetch from "node-fetch";
 export async function handler(event, context) {
   // Hardcode Supabase URL dan ANON_KEY
   const SUPABASE_URL = "https://opfliukxurkarnpotexf.supabase.co";
-  const SUPABASE_KEY = "PASTE_ANeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZmxpdWt4dXJrYXJucG90ZXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MDEyMjcsImV4cCI6MjA3NjQ3NzIyN30.QxiTE3F0jwQkV3ASNz5cfMRF__bctpkRYgCWPoeO-Y0ON_KEY_DI_SINI"; // Ganti dengan ANON_KEY Supabase-mu
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZmxpdWt4dXJrYXJucG90ZXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MDEyMjcsImV4cCI6MjA3NjQ3NzIyN30.QxiTE3F0jwQkV3ASNz5cfMRF__bctpkRYgCWPoeO-Y0";
 
   try {
-    // Ambil semua data dari tabel invoices
     const response = await fetch(`${SUPABASE_URL}/rest/v1/invoices?select=*`, {
       method: "GET",
       headers: {
@@ -15,7 +14,7 @@ export async function handler(event, context) {
         "Authorization": `Bearer ${SUPABASE_KEY}`,
         "Content-Type": "application/json",
         "Accept": "application/json"
-      },
+      }
     });
 
     if (!response.ok) {
@@ -30,8 +29,12 @@ export async function handler(event, context) {
       body: JSON.stringify({
         success: true,
         count: rows.length,
-        rows: rows,
+        rows: rows
       }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
     };
   } catch (err) {
     console.error("❌ get_invoices error:", err);
@@ -39,8 +42,12 @@ export async function handler(event, context) {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
-        error: err.message,
+        error: err.message
       }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
     };
   }
 }
