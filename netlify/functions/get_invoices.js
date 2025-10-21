@@ -1,6 +1,6 @@
-import fetch from "node-fetch";
+const fetch = require("node-fetch");
 
-export async function handler() {
+exports.handler = async function () {
   const SUPABASE_URL = "https://opfliukxurkarnpotexf.supabase.co";
   const SUPABASE_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZmxpdWt4dXJrYXJucG90ZXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MDEyMjcsImV4cCI6MjA3NjQ3NzIyN30.QxiTE3F0jwQkV3ASNz5cfMRF__bctpkRYgCWPoeO-Y0";
@@ -26,11 +26,7 @@ export async function handler() {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({
-        success: true,
-        count: Array.isArray(data) ? data.length : 0,
-        rows: Array.isArray(data) ? data : [], // ✅ selalu kirim array
-      }),
+      body: JSON.stringify(Array.isArray(data) ? data : []),
     };
   } catch (err) {
     console.error("❌ get_invoices error:", err.message);
@@ -40,10 +36,7 @@ export async function handler() {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({
-        success: false,
-        error: err.message,
-      }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
-}
+};
