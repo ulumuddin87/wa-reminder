@@ -1,188 +1,227 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>WA Reminder Dashboard</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  </head>
-  <body class="bg-light">
-    <div class="container py-5">
-      <h2 class="mb-4">📋 WA Reminder Dashboard</h2>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WA Reminder (Netlify)</title>
 
-      <div class="card p-3 mb-3">
-        <form id="form-add">
-          <div class="row g-2 align-items-center">
-            <div class="col-md-3">
-              <input
-                class="form-control"
-                id="name"
-                name="name"
-                placeholder="Nama"
-                required
-              />
-            </div>
-            <div class="col-md-3">
-              <input
-                class="form-control"
-                id="phone"
-                name="phone"
-                placeholder="+628..."
-                required
-              />
-            </div>
-            <div class="col-md-2">
-              <input
-                class="form-control"
-                id="due_date"
-                name="due_date"
-                type="date"
-                required
-              />
-            </div>
-            <div class="col-md-2">
-              <input
-                class="form-control"
-                id="amount"
-                name="amount"
-                type="number"
-                placeholder="Jumlah"
-                required
-              />
-            </div>
-            <div class="col-md-2 text-end">
-              <button class="btn btn-primary" type="submit">
-                Tambah Nasabah
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-      <div class="card p-3 mb-3">
-        <div class="row g-2 align-items-center">
-          <div class="col-md-8">
-            <input
-              id="excelFile"
-              type="file"
-              accept=".xlsx,.xls"
-              class="form-control"
-            />
-          </div>
-          <div class="col-md-4 text-end">
-            <button id="btnUpload" class="btn btn-success">Upload Excel</button>
-          </div>
+  <!-- Cegah akses tanpa login -->
+  <script>
+    if (localStorage.getItem('logged_in') !== 'yes') {
+      window.location.href = '/login.html';
+    }
+  </script>
+
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+  </style>
+</head>
+<body class="bg-light">
+<div class="container py-5">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📋 WA Reminder Dashboard (Netlify)</h2>
+    <button class="btn btn-outline-danger btn-sm" id="btnLogout" title="Keluar dari dashboard">Logout</button>
+  </div>
+
+  <!-- Form tambah nasabah -->
+  <div class="card p-3 mb-3">
+    <form id="form-add">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+          <input class="form-control" id="name" name="name" placeholder="Nama" required>
+        </div>
+        <div class="col-md-3">
+          <input class="form-control" id="phone" name="phone" placeholder="+628..." required>
+        </div>
+        <div class="col-md-2">
+          <input class="form-control" id="due_date" name="due_date" type="date" required>
+        </div>
+        <div class="col-md-2">
+          <input class="form-control" id="amount" name="amount" type="number" placeholder="Jumlah" required>
+        </div>
+        <div class="col-md-2 text-end">
+          <button class="btn btn-primary" type="submit">Tambah Nasabah</button>
         </div>
       </div>
+    </form>
+  </div>
 
-      <div class="card p-3">
-        <div class="table-responsive">
-          <table class="table table-striped align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>Nama</th>
-                <th>Phone</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-        <button id="btnRefresh" class="btn btn-outline-primary">Refresh</button>
+  <!-- Upload Excel -->
+  <div class="card p-3 mb-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <input id="excelFile" type="file" accept=".xlsx,.xls" class="form-control">
+      </div>
+      <div class="col-md-4 text-end">
+        <button id="btnUpload" class="btn btn-success">Upload Excel</button>
       </div>
     </div>
+    <small class="text-muted">Format kolom: <code>name</code>, <code>phone</code>, <code>due_date</code> (YYYY-MM-DD), <code>amount</code>, <code>message</code></small>
+  </div>
 
-    <script>
-      const api = {
-        getInvoices: "/.netlify/functions/get_invoices",
-        addNasabah: "/.netlify/functions/add_nasabah",
-      };
+  <!-- Tabel data -->
+  <div class="card p-3">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Nama</th>
+            <th>Phone</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <button id="btnRefresh" class="btn btn-outline-primary">Refresh</button>
+  </div>
+</div>
 
-      async function load() {
-        const tbody = document.getElementById("tbody");
-        tbody.innerHTML =
-          '<tr><td colspan="5" class="text-center">⏳ Memuat data...</td></tr>';
-        try {
-          const res = await fetch(api.getInvoices);
-          const result = await res.json();
-          const data = result.rows || [];
-          if (!data.length) {
-            tbody.innerHTML =
-              '<tr><td colspan="5" class="text-center text-muted">Belum ada data</td></tr>';
-            return;
-          }
-          tbody.innerHTML = data
-            .map(
-              (inv) => `
-              <tr>
-                <td>${inv.name}</td>
-                <td>${inv.phone}</td>
-                <td>${inv.due_date}</td>
-                <td>${Number(inv.amount).toLocaleString("id-ID")}</td>
-                <td>${inv.status}</td>
-              </tr>`
-            )
-            .join("");
-        } catch (err) {
-          tbody.innerHTML =
-            '<tr><td colspan="5" class="text-danger text-center">Gagal memuat data</td></tr>';
-        }
-      }
+<script>
+const api = {
+  getInvoices: '/.netlify/functions/get_invoices',
+  addNasabah: '/.netlify/functions/add_nasabah',
+  sendNow: '/.netlify/functions/send_now'
+};
 
-      document
-        .getElementById("form-add")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const fd = new FormData(e.target);
-          const body = {
-            name: fd.get("name"),
-            phone: fd.get("phone"),
-            due_date: fd.get("due_date"),
-            amount: Number(fd.get("amount")),
-            message: "",
-          };
-          await fetch(api.addNasabah, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          });
-          e.target.reset();
-          load();
-        });
+// ✅ PERBAIKAN UTAMA: ambil dari data.rows
+async function load() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center">⏳ Memuat data...</td></tr>';
 
-      document
-        .getElementById("btnUpload")
-        .addEventListener("click", async (e) => {
-          e.preventDefault();
-          const fileInput = document.getElementById("excelFile");
-          if (!fileInput.files.length) return alert("Pilih file Excel dulu!");
-          const file = fileInput.files[0];
-          const reader = new FileReader();
-          reader.onload = async (evt) => {
-            const workbook = XLSX.read(evt.target.result, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-            const resp = await fetch(api.addNasabah, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(json),
-            });
-            alert("Upload berhasil!");
-            load();
-          };
-          reader.readAsArrayBuffer(file);
-        });
+  try {
+    const res = await fetch(api.getInvoices);
+    const result = await res.json();
+    const data = Array.isArray(result.rows) ? result.rows : result; // ✅ ambil dari "rows"
 
-      document
-        .getElementById("btnRefresh")
-        .addEventListener("click", () => load());
-      window.addEventListener("load", load);
-    </script>
-  </body>
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada data</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(inv => `
+      <tr>
+        <td>${inv.name || '-'}</td>
+        <td>${inv.phone || '-'}</td>
+        <td>${inv.due_date || '-'}</td>
+        <td>${Number(inv.amount || 0).toLocaleString('id-ID')}</td>
+        <td>${inv.status || '-'}</td>
+        <td>
+          ${inv.status === 'pending'
+            ? `<button class="btn btn-sm btn-success" onclick="sendNow(${inv.id})">Kirim WA</button>`
+            : `<button class="btn btn-sm btn-secondary" disabled>Sudah</button>`}
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('❌ Gagal memuat data:', err);
+    tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center">Gagal memuat data</td></tr>`;
+  }
+}
+
+document.getElementById('btnRefresh').addEventListener('click', load);
+
+document.getElementById('form-add').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = {
+    name: fd.get('name'),
+    phone: fd.get('phone'),
+    due_date: fd.get('due_date'),
+    amount: Number(fd.get('amount')),
+    message: ''
+  };
+
+  try {
+    const res = await fetch(api.addNasabah, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const j = await res.json();
+    alert(j.message || 'Nasabah berhasil ditambahkan');
+    e.target.reset();
+    load();
+  } catch (err) {
+    alert('Gagal menambah nasabah: ' + err.message);
+  }
+});
+
+async function sendNow(id) {
+  if (!confirm('Kirim pesan WA ke nasabah ini sekarang?')) return;
+  try {
+    const res = await fetch(api.sendNow, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const j = await res.json();
+    if (res.ok) alert('Pesan terkirim!');
+    else alert('Gagal: ' + (j.error || JSON.stringify(j)));
+    load();
+  } catch (err) {
+    alert('Gagal mengirim: ' + err.message);
+  }
+}
+
+// Upload Excel
+document.getElementById('btnUpload').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const finput = document.getElementById('excelFile');
+  if (!finput.files.length) {
+    alert('Pilih file Excel terlebih dahulu');
+    return;
+  }
+
+  const file = finput.files[0];
+  const reader = new FileReader();
+  reader.onload = async function(evt) {
+    const data = new Uint8Array(evt.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const first = workbook.Sheets[workbook.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(first, { defval: "" });
+
+    const rows = json.map(r => ({
+      name: r.name || r.Name || r.nama,
+      phone: r.phone || r.Phone || r.no || r.nohp,
+      due_date: (r.due_date || r.Due_date || r.tgl || r.tanggal) ? String(r.due_date).slice(0,10) : "",
+      amount: Number(r.amount || r.Amount || r.jumlah || r.tagihan || 0),
+      message: r.message || r.Message || ""
+    }));
+
+    const resp = await fetch(api.addNasabah, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rows)
+    });
+
+    const j = await resp.json();
+    alert('Imported: ' + (j.inserted || rows.length));
+    finput.value = '';
+    load();
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+window.addEventListener('load', load);
+
+document.getElementById('btnLogout').addEventListener('click', () => {
+  localStorage.removeItem('logged_in');
+  window.location.href = '/login.html';
+});
+</script>
+</body>
 </html>

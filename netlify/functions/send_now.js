@@ -4,6 +4,9 @@ export async function handler(event, context) {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
+  // URL Netlify kamu
+  const BASE_URL = "https://resplendent-crumble-f9076b.netlify.app";
+
   try {
     const { id } = event.pathParameters || {};
     if (!id) {
@@ -13,14 +16,16 @@ export async function handler(event, context) {
       };
     }
 
-    // Ambil data invoice dari Supabase
+    // ✅ Ambil data invoice dari Supabase
     const getResp = await fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${id}&select=*`, {
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
       },
     });
-    const [invoice] = await getResp.json();
+
+    const invoices = await getResp.json();
+    const invoice = invoices[0];
 
     if (!invoice) {
       return {
@@ -29,21 +34,27 @@ export async function handler(event, context) {
       };
     }
 
-    // Kirim pesan WA
-    const waResp = await fetch("/.netlify/functions/send_whatsapp", {
+    // ✅ Kirim pesan WA via function send_whatsapp
+    const messageText = `Halo ${invoice.name}, tagihan Anda sebesar Rp${Number(
+      invoice.amount
+    ).toLocaleString("id-ID")} jatuh tempo pada ${invoice.due_date}.`;
+
+    const waResp = await fetch(`${BASE_URL}/.netlify/functions/send_whatsapp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         to: invoice.phone,
-        message: `Halo ${invoice.name}, tagihan Anda sebesar Rp${invoice.amount.toLocaleString()} jatuh tempo pada ${invoice.due_date}.`,
+        message: messageText,
       }),
     });
 
     const waResult = await waResp.json();
 
-    if (!waResp.ok) throw new Error(waResult.error || "Gagal kirim WhatsApp");
+    if (!waResp.ok) {
+      throw new Error(waResult.error || "Gagal kirim WhatsApp");
+    }
 
-    // Update status di Supabase jadi 'sent'
+    // ✅ Update status jadi "sent" di Supabase
     await fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${id}`, {
       method: "PATCH",
       headers: {
@@ -56,7 +67,11 @@ export async function handler(event, context) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, message: "WA sent and status updated." }),
+      body: JSON.stringify({
+        success: true,
+        message: "WhatsApp sent and invoice status updated",
+        sid: waResult.sid,
+      }),
     };
   } catch (err) {
     console.error("❌ send_now error:", err);
