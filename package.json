@@ -1,17 +1,28 @@
 {
   "name": "wa-reminder-netlify",
   "version": "1.0.0",
+  "description": "A Netlify serverless app for sending WhatsApp reminders using Supabase and Twilio",
   "type": "module",
   "scripts": {
     "dev": "netlify dev --port=8888",
-    "start": "netlify dev"
+    "start": "netlify dev",
+    "build": "echo 'No build step required'",
+    "lint": "echo 'Linting not configured'"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
-    "twilio": "^4.21.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "twilio": "^4.21.0"
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "license": "MIT",
+  "keywords": [
+    "netlify",
+    "supabase",
+    "twilio",
+    "whatsapp",
+    "reminder"
+  ]
 }

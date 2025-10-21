@@ -1,6 +1,6 @@
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
 
-exports.handler = async function () {
+export async function handler() {
   const SUPABASE_URL = "https://opfliukxurkarnpotexf.supabase.co";
   const SUPABASE_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZmxpdWt4dXJrYXJucG90ZXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MDEyMjcsImV4cCI6MjA3NjQ3NzIyN30.QxiTE3F0jwQkV3ASNz5cfMRF__bctpkRYgCWPoeO-Y0";
@@ -9,8 +9,8 @@ exports.handler = async function () {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/invoices?select=*`, {
       headers: {
         apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
     });
 
     if (!res.ok) {
@@ -24,9 +24,9 @@ exports.handler = async function () {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify(Array.isArray(data) ? data : []),
+      body: JSON.stringify(Array.isArray(data) ? data : [])
     };
   } catch (err) {
     console.error("❌ get_invoices error:", err.message);
@@ -34,9 +34,9 @@ exports.handler = async function () {
       statusCode: 500,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({ error: err.message })
     };
   }
-};
+}
