@@ -1,6 +1,9 @@
 [build]
-  publish = "public"
   functions = "netlify/functions"
+  publish = "public"  # atau "." jika file HTML kamu di root
+
+[functions]
+  node_bundler = "esbuild"
 
 [[redirects]]
   from = "/*"
