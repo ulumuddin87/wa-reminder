@@ -1,4 +1,3 @@
-// netlify/functions/add_nasabah.js
 import fetch from "node-fetch";
 
 export async function handler(event, context) {
@@ -8,6 +7,8 @@ export async function handler(event, context) {
 
   try {
     const payload = JSON.parse(event.body);
+
+    // Pastikan data dalam bentuk array
     const rows = Array.isArray(payload) ? payload : [payload];
 
     const inserts = rows.map((r) => ({
@@ -19,6 +20,7 @@ export async function handler(event, context) {
       status: r.status || "pending",
     }));
 
+    // Simpan data ke Supabase
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/invoices`, {
       method: "POST",
       headers: {
