@@ -1,26 +1,27 @@
 import fetch from "node-fetch";
 
-export async function handler(event, context) {
+export async function handler(event) {
   const SUPABASE_URL = "https://opfliukxurkarnpotexf.supabase.co";
   const SUPABASE_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZmxpdWt4dXJrYXJucG90ZXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MDEyMjcsImV4cCI6MjA3NjQ3NzIyN30.QxiTE3F0jwQkV3ASNz5cfMRF__bctpkRYgCWPoeO-Y0";
 
   try {
-    const payload = JSON.parse(event.body);
+    if (!event.body) {
+      throw new Error("Request body kosong!");
+    }
 
-    // Pastikan data dalam bentuk array
+    const payload = JSON.parse(event.body);
     const rows = Array.isArray(payload) ? payload : [payload];
 
     const inserts = rows.map((r) => ({
       name: r.name || "",
       phone: r.phone || "",
       due_date: r.due_date || "",
-      amount: r.amount || 0,
+      amount: Number(r.amount || 0),
       message: r.message || "",
       status: r.status || "pending",
     }));
 
-    // Simpan data ke Supabase
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/invoices`, {
       method: "POST",
       headers: {
@@ -34,32 +35,35 @@ export async function handler(event, context) {
 
     if (!resp.ok) {
       const errText = await resp.text();
-      throw new Error(`Supabase error: ${errText}`);
+      throw new Error(`Supabase insert failed: ${errText}`);
     }
 
     const data = await resp.json();
 
     return {
       statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({
         success: true,
         inserted: data.length,
         rows: data,
       }),
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
     };
   } catch (err) {
-    console.error("❌ add_nasabah error:", err);
+    console.error("❌ add_nasabah error:", err.message);
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, error: err.message }),
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
+      body: JSON.stringify({
+        success: false,
+        error: err.message,
+      }),
     };
   }
 }

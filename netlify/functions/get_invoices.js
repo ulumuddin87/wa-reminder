@@ -14,33 +14,36 @@ export async function handler() {
     });
 
     if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`Supabase fetch failed: ${txt}`);
+      const errText = await res.text();
+      throw new Error(`Supabase fetch failed: ${errText}`);
     }
 
     const data = await res.json();
 
     return {
       statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({
         success: true,
-        count: data.length,
-        rows: data,
+        count: Array.isArray(data) ? data.length : 0,
+        rows: Array.isArray(data) ? data : [], // ✅ selalu kirim array
       }),
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
     };
   } catch (err) {
-    console.error("❌ get_invoices error:", err);
+    console.error("❌ get_invoices error:", err.message);
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, error: err.message }),
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
+      body: JSON.stringify({
+        success: false,
+        error: err.message,
+      }),
     };
   }
 }
